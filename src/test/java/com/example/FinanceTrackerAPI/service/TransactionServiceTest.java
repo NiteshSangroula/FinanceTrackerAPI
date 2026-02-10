@@ -1,7 +1,10 @@
 package com.example.FinanceTrackerAPI.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +23,8 @@ import com.example.FinanceTrackerAPI.dto.request.WithdrawRequest;
 import com.example.FinanceTrackerAPI.dto.response.TransactionResponse;
 import com.example.FinanceTrackerAPI.entity.Transaction;
 import com.example.FinanceTrackerAPI.entity.TransactionType;
+import com.example.FinanceTrackerAPI.exception.AccountNotFoundException;
+import com.example.FinanceTrackerAPI.exception.InsufficientBalanceException;
 import com.example.FinanceTrackerAPI.repository.AccountRepository;
 import com.example.FinanceTrackerAPI.repository.TransactionRepository;
 
@@ -169,7 +174,127 @@ public class TransactionServiceTest {
 
         verify(accountRepository).changeBalance(toId, amount);
         verify(transactionRepository).save(any(Transaction.class));
+    }
 
+    // INSUFFICIENT BALANCE
+
+    @Test
+    public void withdraw_insufficientBalance() {
+        long fromId = 1L;
+        BigDecimal amount = new BigDecimal("100");
+
+        WithdrawRequest request = new WithdrawRequest(
+                fromId,
+                amount,
+                "test withdraw");
+
+        when(accountRepository.existsById(fromId))
+                .thenReturn(true);
+
+        when(accountRepository.changeBalance(fromId, amount.negate()))
+                .thenReturn(0);
+
+        assertThrows(InsufficientBalanceException.class,
+                () -> transactionService.withdraw(request));
+
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void transfer_insufficientBalance() {
+        long fromId = 1L;
+        long toId = 2L;
+        BigDecimal amount = new BigDecimal("100");
+
+        TransferRequest request = new TransferRequest(
+                fromId,
+                toId,
+                amount,
+                "test");
+
+        when(accountRepository.existsById(fromId))
+                .thenReturn(true);
+
+        when(accountRepository.existsById(toId))
+                .thenReturn(true);
+
+        when(accountRepository.changeBalance(fromId, amount.negate()))
+                .thenReturn(0);
+
+        assertThrows(InsufficientBalanceException.class,
+                () -> transactionService.transfer(request));
+        verify(transactionRepository, never()).save(any());
+    }
+
+    // ACCOUNT NOT FOUND
+
+    @Test
+    public void deposit_accountNotFound() {
+        long toId = 1L;
+        DepositRequest request = new DepositRequest(
+                toId, BigDecimal.TEN, "test");
+
+        when(accountRepository.existsById(toId))
+                .thenReturn(false);
+
+        assertThrows(AccountNotFoundException.class,
+                () -> transactionService.deposit(request));
+
+        verify(accountRepository, never()).changeBalance(anyLong(), any());
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void withdraw_accountNotFound() {
+        long fromId = 1L;
+        WithdrawRequest request = new WithdrawRequest(
+                fromId, BigDecimal.TEN, "test");
+
+        when(accountRepository.existsById(fromId))
+                .thenReturn(false);
+
+        assertThrows(AccountNotFoundException.class,
+                () -> transactionService.withdraw(request));
+
+        verify(accountRepository, never()).changeBalance(anyLong(), any());
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void transfer_toAccountNotFound() {
+        long fromId = 1L;
+        long toId = 2L;
+        TransferRequest request = new TransferRequest(
+                fromId, toId, BigDecimal.TEN, "test");
+
+        when(accountRepository.existsById(fromId))
+                .thenReturn(true);
+
+        when(accountRepository.existsById(toId))
+                .thenReturn(false);
+
+        assertThrows(AccountNotFoundException.class,
+                () -> transactionService.transfer(request));
+
+        verify(accountRepository, never()).changeBalance(anyLong(), any());
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void transfer_fromAccountNotFound() {
+        long fromId = 1L;
+        long toId = 2L;
+        TransferRequest request = new TransferRequest(
+                fromId, toId, BigDecimal.TEN, "test");
+
+        when(accountRepository.existsById(fromId))
+                .thenReturn(false);
+
+        assertThrows(AccountNotFoundException.class,
+                () -> transactionService.transfer(request));
+
+        verify(accountRepository, never()).changeBalance(anyLong(), any());
+        verify(transactionRepository, never()).save(any());
     }
 
 }
