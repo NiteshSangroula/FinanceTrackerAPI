@@ -174,4 +174,7 @@ public class TransactionService {
         return mapToTransactionResponse(transaction);
     }
 
+    public void dummy(String name) {
+    }
+
 }
