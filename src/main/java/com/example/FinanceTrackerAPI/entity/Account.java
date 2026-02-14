@@ -3,8 +3,16 @@ package com.example.FinanceTrackerAPI.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Account {
     @Id
     private long id;
@@ -12,32 +20,16 @@ public class Account {
     private BigDecimal balance;
     private LocalDateTime createdAt;
 
-    public long getId() {
-        return id;
-    }
-
     public void setId(long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

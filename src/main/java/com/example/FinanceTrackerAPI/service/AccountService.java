@@ -58,5 +58,18 @@ public class AccountService {
         }
         accountRepository.deleteById(id);
     }
+    // Dummy methods start
 
+    public void dangerousWork(long id) {
+        simpleWork();
+        deleteAccount(id);
+    }
+
+    public void simpleWork(){
+        System.out.println("Doing simple work...");
+    }
+
+    public void dangerousWork1(Account account) {
+
+    }
 }

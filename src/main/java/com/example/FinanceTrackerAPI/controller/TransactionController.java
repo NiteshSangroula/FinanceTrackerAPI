@@ -45,7 +45,7 @@ public class TransactionController {
 
         TransactionResponse created = transactionService.transfer(request);
 
-        transactionService.dummy(request.description());
+        TransactionService.dummy(request.description());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

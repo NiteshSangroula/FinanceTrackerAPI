@@ -174,7 +174,9 @@ public class TransactionService {
         return mapToTransactionResponse(transaction);
     }
 
-    public void dummy(String name) {
+    public static String dummy(String name) {
+        //Some repo calls
+        return null;
     }
 
 }

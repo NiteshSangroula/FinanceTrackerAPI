@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,16 +39,21 @@ class TransactionControllerTest {
         when(service.transfer(request))
                 .thenReturn(mockResponse);
 
-        doNothing().when(service).dummy(any());
 
-        ResponseEntity<TransactionResponse> response = controller.createTransferTransaction(request);
+        try(MockedStatic<TransactionService> mockedStatic = mockStatic(TransactionService.class)) {
+            when(TransactionService.dummy(request.description())).thenReturn("Nitesh");
 
-        verify(service).transfer(request);
+            //Act
+            ResponseEntity<TransactionResponse> response = controller.createTransferTransaction(request);
 
-        verify(service).dummy(request.description());
+            //Assert
+            mockedStatic.verify(() -> TransactionService.dummy(request.description()));
+            verify(service).transfer(request);
+            assertEquals(HttpStatus.CREATED, response.getStatusCode());
+            assertEquals(mockResponse, response.getBody());
+        }
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(mockResponse, response.getBody());
+
     }
 
 }
