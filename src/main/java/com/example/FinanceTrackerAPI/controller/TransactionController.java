@@ -17,6 +17,8 @@ import com.example.FinanceTrackerAPI.dto.request.WithdrawRequest;
 import com.example.FinanceTrackerAPI.dto.response.TransactionResponse;
 import com.example.FinanceTrackerAPI.service.TransactionService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
@@ -39,9 +41,11 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> createTransferTransaction(
-            @RequestBody TransferRequest request) {
+            @Valid @RequestBody TransferRequest request) {
 
         TransactionResponse created = transactionService.transfer(request);
+
+        transactionService.dummy(request.description());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -50,7 +54,7 @@ public class TransactionController {
 
     @PostMapping("/withdraw")
     public ResponseEntity<TransactionResponse> createWithdrawTransaction(
-            @RequestBody WithdrawRequest request) {
+            @Valid @RequestBody WithdrawRequest request) {
 
         TransactionResponse created = transactionService.withdraw(request);
 
@@ -61,7 +65,7 @@ public class TransactionController {
 
     @PostMapping("/deposit")
     public ResponseEntity<TransactionResponse> createDepositTransaction(
-            @RequestBody DepositRequest request) {
+            @Valid @RequestBody DepositRequest request) {
 
         TransactionResponse created = transactionService.deposit(request);
 

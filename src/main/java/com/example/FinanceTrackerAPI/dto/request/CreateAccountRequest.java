@@ -7,6 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record CreateAccountRequest(
-        @NotBlank String name,
-        @NotNull @Positive BigDecimal initialAmount) {
+    @NotBlank(message = "Name cannot be empty")
+    String name,
+
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be positive") 
+    BigDecimal initialAmount) {
 }
