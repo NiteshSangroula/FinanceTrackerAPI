@@ -14,65 +14,92 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.FinanceTrackerAPI.dto.response.ErrorResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // 1. Account Not Found
     @ExceptionHandler(AccountNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleAccountNotFound(AccountNotFoundException ex) {
-        return new ErrorResponse(
+    public ResponseEntity<ErrorResponse> handleAccountNotFound(
+            AccountNotFoundException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
-                "Account not found",
-                ex.getMessage());
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    // 2. Transaction Not Found
     @ExceptionHandler(TransactionNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleTransactionNotFound(TransactionNotFoundException ex) {
-        return new ErrorResponse(
+    public ResponseEntity<ErrorResponse> handleTransactionNotFound(
+            TransactionNotFoundException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
-                "Transaction not found",
-                ex.getMessage());
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InsufficientBalanceException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleInsufficientBalance(InsufficientBalanceException ex) {
-        return new ErrorResponse(
+    public ResponseEntity<ErrorResponse> handleInsufficientBalance(
+            InsufficientBalanceException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Insufficient Balance",
-                ex.getMessage());
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    // Validation errors @Valid
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(
-            MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidationError(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
 
-        List<String> errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> error.getDefaultMessage())
-                .toList();
+        String message = ex.getBindingResult()
+                .getFieldError()
+                .getDefaultMessage();
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", "Validation Failed");
-        response.put("details", errors);
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                message,
+                request.getRequestURI());
 
-        return ResponseEntity.badRequest().body(response);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    // fallback for any unexpected errors
+    // Catch-all
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleGeneric(Exception ex) {
-        return new ErrorResponse(
+    public ResponseEntity<ErrorResponse> handleGlobalException(
+            Exception ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal server error",
-                "Something went wrong");
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                "Something went wrong",
+                request.getRequestURI());
+
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
