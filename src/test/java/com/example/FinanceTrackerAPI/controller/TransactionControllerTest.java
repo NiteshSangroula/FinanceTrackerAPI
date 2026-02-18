@@ -38,13 +38,9 @@ class TransactionControllerTest {
         when(service.transfer(request))
                 .thenReturn(mockResponse);
 
-        doNothing().when(service).dummy(any());
-
         ResponseEntity<TransactionResponse> response = controller.createTransferTransaction(request);
 
         verify(service).transfer(request);
-
-        verify(service).dummy(request.description());
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(mockResponse, response.getBody());
