@@ -16,10 +16,13 @@ import com.example.FinanceTrackerAPI.dto.request.CreateAccountRequest;
 import com.example.FinanceTrackerAPI.dto.response.AccountResponse;
 import com.example.FinanceTrackerAPI.service.AccountService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/accounts")
+@Tag(name = "Account APIs", description = "Operations related to bank accounts")
 public class AccountController {
     private final AccountService accountService;
 
@@ -27,12 +30,14 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    @Operation(summary = "Get all accounts")
     @GetMapping
     public ResponseEntity<List<AccountResponse>> getAllAccount() {
 
         return ResponseEntity.ok(accountService.getAllAccounts());
     }
 
+    @Operation(summary = "Get account by ID")
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponse> getAccountById(
             @PathVariable long id) {
@@ -40,6 +45,7 @@ public class AccountController {
         return ResponseEntity.ok(accountService.getAccountById(id));
     }
 
+    @Operation(summary = "Create new account")
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(
             @Valid @RequestBody CreateAccountRequest createAccountRequest) {
@@ -50,6 +56,7 @@ public class AccountController {
                 .body(created);
     }
 
+    @Operation(summary = "Delete account by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(@PathVariable long id) {
 

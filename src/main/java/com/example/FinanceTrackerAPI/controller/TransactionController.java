@@ -1,6 +1,5 @@
 package com.example.FinanceTrackerAPI.controller;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +17,13 @@ import com.example.FinanceTrackerAPI.dto.response.PageResponse;
 import com.example.FinanceTrackerAPI.dto.response.TransactionResponse;
 import com.example.FinanceTrackerAPI.service.TransactionService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/transactions")
+@Tag(name = "Transaction APIs", description = "Operations related to transactions")
 public class TransactionController {
     private final TransactionService transactionService;
 
@@ -29,6 +31,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
+    @Operation(summary = "Get all transactions")
     @GetMapping
     public ResponseEntity<PageResponse<TransactionResponse>> getAllTransactions(
             @RequestParam(defaultValue = "0") int page,
@@ -40,12 +43,14 @@ public class TransactionController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "Get transaction by ID")
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> getTransactionById(
             @PathVariable long id) {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
 
+    @Operation(summary = "Transfer amount from one account to another")
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> createTransferTransaction(
             @Valid @RequestBody TransferRequest request) {
@@ -57,6 +62,7 @@ public class TransactionController {
                 .body(created);
     }
 
+    @Operation(summary = "Withdraw amount from an account")
     @PostMapping("/withdraw")
     public ResponseEntity<TransactionResponse> createWithdrawTransaction(
             @Valid @RequestBody WithdrawRequest request) {
@@ -68,6 +74,7 @@ public class TransactionController {
                 .body(created);
     }
 
+    @Operation(summary = "Deposit amount to an account")
     @PostMapping("/deposit")
     public ResponseEntity<TransactionResponse> createDepositTransaction(
             @Valid @RequestBody DepositRequest request) {
