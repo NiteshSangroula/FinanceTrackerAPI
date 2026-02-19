@@ -3,7 +3,6 @@ package com.example.FinanceTrackerAPI.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.FinanceTrackerAPI.dto.request.DepositRequest;
 import com.example.FinanceTrackerAPI.dto.request.TransferRequest;
 import com.example.FinanceTrackerAPI.dto.request.WithdrawRequest;
+import com.example.FinanceTrackerAPI.dto.response.PageResponse;
 import com.example.FinanceTrackerAPI.dto.response.TransactionResponse;
 import com.example.FinanceTrackerAPI.entity.Transaction;
 import com.example.FinanceTrackerAPI.entity.TransactionType;
@@ -160,21 +160,39 @@ public class TransactionService {
         return mapToTransactionResponse(saved);
     }
 
-    public List<TransactionResponse> getAllTransactions() {
-        return StreamSupport
-                .stream(transactionRepository.findAll().spliterator(), false)
+    // Get All Transaction
+    public PageResponse<TransactionResponse> getTransactions(
+            int page,
+            int size,
+            Long accountId) {
+        int offset = page * size;
+
+        List<Transaction> transactions;
+        long total;
+
+        if (accountId != null) {
+            transactions = transactionRepository.findByAccountIdPaged(accountId, size, offset);
+            total = transactionRepository.countByAccountId(accountId);
+        } else {
+            transactions = transactionRepository.findAllPaged(size, offset);
+            total = transactionRepository.countAll();
+        }
+
+        List<TransactionResponse> content = transactions.stream()
                 .map(this::mapToTransactionResponse)
                 .toList();
+
+        int totalPages = (int) Math.ceil((double) total / size);
+
+        return new PageResponse<TransactionResponse>(content, page, size, total, totalPages);
     }
 
+    // Get Transaction by Id
     public TransactionResponse getTransactionById(long id) {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new TransactionNotFoundException(id));
 
         return mapToTransactionResponse(transaction);
-    }
-
-    public void dummy(String name) {
     }
 
 }
