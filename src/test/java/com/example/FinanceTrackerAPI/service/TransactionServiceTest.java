@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -91,6 +92,14 @@ public class TransactionServiceTest {
         verify(accountRepository).changeBalance(fromId, amount.negate());
         verify(accountRepository).changeBalance(toId, amount);
         verify(transactionRepository).save(any(Transaction.class));
+
+        ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
+
+        verify(transactionRepository).save(captor.capture());
+
+        Transaction actual = captor.getValue();
+
+        assertEquals(TransactionType.TRANSFER, actual.getType());
 
     }
 
