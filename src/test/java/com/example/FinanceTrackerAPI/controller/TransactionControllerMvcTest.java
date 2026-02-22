@@ -4,12 +4,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -22,8 +24,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.example.FinanceTrackerAPI.dto.request.DepositRequest;
 import com.example.FinanceTrackerAPI.dto.request.TransferRequest;
 import com.example.FinanceTrackerAPI.dto.request.WithdrawRequest;
+import com.example.FinanceTrackerAPI.dto.response.PageResponse;
 import com.example.FinanceTrackerAPI.dto.response.TransactionResponse;
 import com.example.FinanceTrackerAPI.entity.TransactionType;
+import com.example.FinanceTrackerAPI.exception.TransactionNotFoundException;
 import com.example.FinanceTrackerAPI.service.TransactionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -287,8 +291,109 @@ public class TransactionControllerMvcTest {
     }
 
     //-----------GET ALL TRANSACTIONS
+    @Test
+    void getAllTransactions_defaultParams_returns200() throws Exception {
 
-    
+        List<TransactionResponse> content = List.of(
+            new TransactionResponse(
+                1L,
+                new BigDecimal("100"),
+                TransactionType.DEPOSIT,
+                null,
+                1L,
+                LocalDateTime.now(),
+                "test"
+            )
+        );
+
+        PageResponse<TransactionResponse> pageResponse =
+        new PageResponse<>(content, 0, 10, 1L, 1);
+
+        when(service.getTransactions(0, 10, null))
+            .thenReturn(pageResponse);
+
+        mockMvc.perform(get("/api/transactions"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].id").value(1))
+            .andExpect(jsonPath("$.content[0].amount").value(100))
+            .andExpect(jsonPath("$.content[0].type").value("DEPOSIT"))
+            .andExpect(jsonPath("$.content[0].toAccountId").value(1))
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.totalPages").value(1));
+
+        verify(service).getTransactions(0, 10, null);
+    }
+
+    @Test
+    void getAllTransactions_withParams_returns200() throws Exception {
+
+        List<TransactionResponse> content = List.of(
+            new TransactionResponse(
+                2L,
+                new BigDecimal("250"),
+                TransactionType.TRANSFER,
+                1L,
+                2L,
+                LocalDateTime.now(),
+                "transfer test"
+            )
+        );
+
+        PageResponse<TransactionResponse> pageResponse =
+        new PageResponse<>(content, 1, 5, 1L, 1);
+
+        when(service.getTransactions(1, 5, 2L))
+            .thenReturn(pageResponse);
+
+        mockMvc.perform(get("/api/transactions")
+            .param("page", "1")
+            .param("size", "5")
+            .param("accountId", "2"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].id").value(2))
+            .andExpect(jsonPath("$.content[0].amount").value(250))
+            .andExpect(jsonPath("$.content[0].type").value("TRANSFER"))
+            .andExpect(jsonPath("$.content[0].fromAccountId").value(1))
+            .andExpect(jsonPath("$.content[0].toAccountId").value(2))
+            .andExpect(jsonPath("$.page").value(1))
+            .andExpect(jsonPath("$.size").value(5))
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.totalPages").value(1));
+
+        verify(service).getTransactions(1, 5, 2L);
+    }
+
 
     //-----------GET TRANSACTION BY ID
+    @Test
+    void getTransactionById_validId_returns200() throws Exception {
+        TransactionResponse response = new TransactionResponse(
+            1L, new BigDecimal("100"), TransactionType.TRANSFER, 1L, 2L, LocalDateTime.now(), "test");
+
+        when(service.getTransactionById(1L))
+            .thenReturn(response);
+
+        mockMvc.perform(get("/api/transactions/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.amount").value(100))
+            .andExpect(jsonPath("$.type").value("TRANSFER"))
+            .andExpect(jsonPath("$.fromAccountId").value(1))
+            .andExpect(jsonPath("$.toAccountId").value(2))
+            .andExpect(jsonPath("$.description").value("test"));
+
+        verify(service).getTransactionById(1L);
+    }
+
+    @Test
+    void getTransactionById_notFound_returns404() throws Exception {
+
+        when(service.getTransactionById(1L))
+            .thenThrow(new TransactionNotFoundException(1L));
+
+        mockMvc.perform(get("/api/transactions/1"))
+            .andExpect(status().isNotFound());
+
+        verify(service).getTransactionById(1L);
+    }
 }
