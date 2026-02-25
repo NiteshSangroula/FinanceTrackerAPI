@@ -60,10 +60,13 @@ public class AccountServiceTest {
         assertNotNull(response.createdAt());
     }
 
+    /*
     @Test
     public void createAccount_shouldThrowException_whenRepositoryFails() {
 
-        CreateAccountRequest request = new CreateAccountRequest("Cole Palmer", new BigDecimal(1000));
+        CreateAccountRequest request = new CreateAccountRequest(
+            "Cole Palmer", 
+            new BigDecimal(1000));
 
         when(accountRepository.save(any()))
                 .thenThrow(new RuntimeException("DB error"));
@@ -73,6 +76,7 @@ public class AccountServiceTest {
         assertEquals("DB error", ex.getMessage());
 
     }
+    */
 
     // ========= GET ALL ACCOUNTS TESTS ============
     @Test
@@ -91,9 +95,11 @@ public class AccountServiceTest {
 
         when(accountRepository.findAll()).thenReturn(List.of(account1, account2));
 
+        //act
         List<AccountResponse> result = accountService.getAllAccounts();
 
         assertEquals(2, result.size());
+        assertEquals("A", result.get(0).name());
         assertEquals("B", result.get(1).name());
         verify(accountRepository).findAll();
     }

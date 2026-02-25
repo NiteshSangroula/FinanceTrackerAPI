@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Positive;
 public record TransferRequest(
         @NotNull(message = "Account id is required") Long fromAccountId,
 
-        @NotNull(message = "Account id is required") long toAccountId,
+        @NotNull(message = "Account id is required") Long toAccountId,
 
         @NotNull(message = "Amount is required") @Positive(message = "Amount must be positive") BigDecimal amount,
 
