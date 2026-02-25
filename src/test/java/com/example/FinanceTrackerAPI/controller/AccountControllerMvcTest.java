@@ -69,7 +69,9 @@ public class AccountControllerMvcTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").exists());
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+            .andExpect(jsonPath("$.fieldErrors[0].code").value("NotBlank"))
+            .andExpect(jsonPath("$.message").doesNotExist());
 
         verify(accountService, never()).createAccount(any());
     }
@@ -80,10 +82,12 @@ public class AccountControllerMvcTest {
                 "Nitesh", new BigDecimal("-1000"));
 
         mockMvc.perform(post("/api/accounts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").exists());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("initialAmount"))
+            .andExpect(jsonPath("$.fieldErrors[0].code").value("Positive"))
+            .andExpect(jsonPath("$.message").doesNotExist());
 
         verify(accountService, never()).createAccount(any());
     }
@@ -91,16 +95,19 @@ public class AccountControllerMvcTest {
     @Test
     void createAccount_nullBalance_returns400() throws Exception {
         CreateAccountRequest request = new CreateAccountRequest(
-                "Nitesh", null);
+            "Nitesh", null);
 
         mockMvc.perform(post("/api/accounts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").exists());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("initialAmount"))
+            .andExpect(jsonPath("$.fieldErrors[0].code").value("NotNull"))
+            .andExpect(jsonPath("$.message").doesNotExist());
 
         verify(accountService, never()).createAccount(any());
     }
+
 
     // get all accounts
     @Test
@@ -147,7 +154,9 @@ public class AccountControllerMvcTest {
                 .thenThrow(new AccountNotFoundException(1L));
 
         mockMvc.perform(get("/api/accounts/1"))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Account not found with id: 1"))
+            .andExpect(jsonPath("$.fieldErrors").doesNotExist());
 
         verify(accountService).getAccountById(1L);
     }
@@ -168,7 +177,9 @@ public class AccountControllerMvcTest {
                 .when(accountService).deleteAccount(1L);
 
         mockMvc.perform(delete("/api/accounts/1"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Account not found with id: 1"))
+            .andExpect(jsonPath("$.fieldErrors").doesNotExist());
 
         verify(accountService).deleteAccount(1L);
     }
