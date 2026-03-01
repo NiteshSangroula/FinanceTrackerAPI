@@ -1,79 +1,149 @@
 # 💰 Finance Tracker API
 
-A simple **Spring Boot backend** for managing bank-like accounts and money transactions  
-(deposit, withdraw, and transfer) with validation, error handling, and unit testing.
+A **Spring Boot REST API** that simulates core banking operations such as  
+account management, deposits, withdrawals, and secure money transfers.
 
-This project is built as a **learning-focused fintech backend** to practice real-world backend  
-design, clean architecture, and testing.
+Built as a **real-world backend project** focusing on transactional safety,
+clean architecture, pagination, filtering, API documentation, and automated testing.
 
 ---
 
-## 🚀 Features
+## 🚀 Project Overview
 
-### Account Management
-- Create new accounts  
-- View all accounts  
-- Delete accounts  
+Finance Tracker API provides a backend system capable of handling financial
+operations while maintaining **data consistency** and **transaction integrity**.
 
-### Transactions
-- Deposit money into an account  
-- Withdraw money with **insufficient balance protection**  
-- Transfer money between accounts (**atomic & transactional**)  
-- View transaction history  
+The system ensures:
 
-### Reliability & Safety
-- Input validation using **Jakarta Validation**  
-- Custom exceptions:
-  - `AccountNotFoundException`
-  - `InsufficientBalanceException`
-- **Transactional integrity** for transfers  
-- **Unit tests** for service layer logic  
+- Safe balance updates
+- Atomic money transfers
+- Transaction history tracking
+- Reliable rollback on failures
+- Fully tested backend workflows
+
+---
+
+## ✨ Features
+
+### 🏦 Account Management
+- Create accounts
+- Retrieve account details
+- View all accounts
+- Delete accounts
+
+---
+
+### 💸 Transaction System
+- Deposit money
+- Withdraw money with balance validation
+- Transfer funds between accounts
+- Automatic rollback on failed transfers
+- Transaction history tracking
+
+---
+
+### 📄 Pagination & Filtering
+- Paginated transaction history
+- Filter transactions by account
+- Offset-based pagination using custom SQL queries
+
+---
+
+### 🔒 Data Integrity & Validation
+- `@Transactional` money transfers
+- Insufficient balance protection
+- Account existence validation
+- Request validation using Jakarta Validation
+- Custom exception handling
+
+---
+
+### 📘 API Documentation
+- Integrated **Swagger / OpenAPI UI**
+- Interactive endpoint testing directly from browser
+
+Swagger UI:
+```
+http://localhost:8080/swagger-ui.html
+```
+
+---
+
+### 🧪 Testing
+- Service layer unit tests (Mockito)
+- Controller & database integration tests
+- Transaction rollback verification
+- Real database interaction testing
+
+---
+
+## 🧱 Architecture
+
+Layered architecture following backend best practices:
+```
+Controller → Service → Repository → Database
+```
+
+### Layers
+```
+controller → REST endpoints
+service → Business logic & transactions
+repository → Spring Data JDBC + SQL queries
+entity → Database models
+dto → Request / response models
+exception → Custom exceptions
+config → Application configuration
+```
 
 ---
 
 ## 🛠 Tech Stack
 
-- **Java 21**  
-- **Spring Boot**  
-- **Spring Data JDBC**  
-- **H2 Database** (development)  
-- **JUnit 5 + Mockito** (testing)  
-- **Maven**
+| Technology | Purpose |
+|------------|---------|
+| Java 21 | Core language |
+| Spring Boot | Backend framework |
+| Spring Data JDBC | Persistence layer |
+| H2 Database | Development database |
+| Swagger / OpenAPI | API documentation |
+| Maven | Build tool |
+| JUnit 5 | Testing |
+| Mockito | Unit testing |
+| MockMvc | Integration testing |
 
 ---
 
 ## 📂 Project Structure
-
-```bash
+```
 src/main/java
- ├── controller        # REST controllers
- ├── service           # Business logic
- ├── repository        # CRUD repositories
- ├── entity            # Database entities
- ├── dto               # Request/response models
- └── exception         # Custom exceptions
+├── controller
+├── service
+├── repository
+├── entity
+├── dto
+├── exception
+└── config
 ```
 
 ---
 
 ## ▶️ Running Locally
 
-### 1. Clone the repository
+### 1️⃣ Clone Repository
 
 ```bash
 git clone https://github.com/NiteshSangroula/FinanceTrackerAPI.git
 cd FinanceTrackerAPI
 ```
 
-### 2. Run the application
+---
 
-```bash
+### 2️⃣ Run Application
+```
 ./mvnw spring-boot:run
 ```
-
-App starts at:
-
-```bash
+Application starts at:
+```
 http://localhost:8080
 ```
 
@@ -81,125 +151,127 @@ http://localhost:8080
 
 ## 🗄 Database
 
-- Default: **H2 in-memory database**
+Default configuration uses an H2 in-memory database.
 
-H2 Console:
-
-```bash
+H2 Console
+```
 http://localhost:8080/h2-console
 ```
-
-Typical config:
-
-```bash
+Configuration:
+```
 JDBC URL: jdbc:h2:mem:testdb
 User: sa
-Password: (empty)
+Password:
 ```
 
 ---
 
-## 📡 API Endpoints
-
+## 📡 REST API Endpoints
 ### Account APIs
-
-**Create account**
-```bash
-POST /api/accounts
 ```
-
-**Get all accounts**
-```bash
-GET /api/accounts
-```
-
-**Get account by id**
-```bash
-GET /api/accounts/{id}
-```
-
-**Delete account**
-```bash
+POST   /api/accounts
+GET    /api/accounts
+GET    /api/accounts/{id}
 DELETE /api/accounts/{id}
 ```
 
 ---
 
 ### Transaction APIs
-
-**Deposit**
-```bash
+```
 POST /api/transactions/deposit
-```
-
-**Withdraw**
-```bash
 POST /api/transactions/withdraw
-```
-
-**Transfer**
-```bash
 POST /api/transactions/transfer
-```
-
-**Get all transactions**
-```bash
-GET /api/transactions
-```
-
-**Get transaction by id**
-```bash
-GET /api/transactions/{id}
+GET  /api/transactions
+GET  /api/transactions/{id}
+GET  /api/transactions/account/{accountId}
 ```
 
 ---
 
-## 🧪 Testing
+## 📄 Pagination Example
+GET /api/transactions?size=10&offset=0
 
-Run unit tests:
+Filter by account:
 
-```bash
+GET /api/transactions/account/{accountId}?size=10&offset=0
+
+---
+
+## 🧪 Running Tests
+
+### Execute all tests:
+```
 ./mvnw test
 ```
 
-Tests cover:
+### Test Coverage
 
-- Deposit success & failure  
-- Withdraw success & insufficient balance  
-- Transfer success & edge cases  
-- Account not found scenarios  
-
----
-
-## 📈 Current Status
-
-✔ Core banking operations implemented  
-✔ Validation and exception handling  
-✔ Unit tested service layer  
-
-### 🔜 Planned Improvements
-
-- Global exception handler (`@RestControllerAdvice`)  
-- Integration tests  
-- Pagination & filtering  
-- Swagger/OpenAPI documentation  
-- PostgreSQL + Docker support  
-- Basic authentication & security  
+- ✅ Deposit operations
+- ✅ Withdraw operations
+- ✅ Transfer success
+- ✅ Transfer rollback on failure
+- ✅ Account validation
+- ✅ Integration testing with real database
 
 ---
 
-## 🎯 Learning Goals
+## ⚙️ Key Backend Concepts Implemented
 
-- Writing **clean service-layer business logic**  
-- Designing **safe financial transactions**  
-- Practicing **unit testing with Mockito**  
-- Building a **realistic backend structure**  
+- Transaction Management (@Transactional)
+- ACID-like financial consistency
+- Repository Pattern
+- DTO-based API design
+- Custom SQL with Spring Data JDBC
+- Pagination & filtering
+- Integration Testing
+- Exception-driven validation
+- REST API documentation
 
 ---
 
-## 👤 Author
+## 📈 Project Status
 
-**Nitesh Sangroula**
+- ✅ Backend fully implemented
+- ✅ Pagination & filtering added
+- ✅ Swagger documentation integrated
+- ✅ Unit & integration tests completed
 
-GitHub:  
+---
+
+## 🔮 Future Improvements
+
+- PostgreSQL migration
+- Docker containerization
+- Authentication & Authorization (JWT)
+- Cloud deployment
+- Frontend client (React / Angular)
+
+---
+
+## 🎯 Learning Outcomes
+
+### Through this project:
+- Designed a transaction-safe financial backend
+- Implemented real service-layer business logic
+- Practiced database consistency handling
+- Built and tested REST APIs end-to-end
+- Learned integration testing strategies
+
+---
+
+## 👨‍💻 Author
+
+Nitesh Sangroula
+
+GitHub:
 https://github.com/NiteshSangroula
+
+---
+
+⭐ Project Note
+
+This is the first complete end-to-end backend project
+built from design → implementation → testing → documentation
+as part of a structured Spring Boot learning journey.
+
